@@ -1,0 +1,68 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/pythia
+    docker:
+      - image: circleci/openjdk:13-jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pythia-{{ checksum "build.sbt" }}
+            - pythia
+      - run: sbt compile
+      - run: sbt test
+      - store_test_results:
+          path: test-results
+      - run: sbt assembly
+      - persist_to_workspace:
+          root: target
+          paths:
+            - backend/target/scala-2.13/pythia-backend.jar
+      - store_artifacts:
+          path: backend/target/scala-2.13/pythia-backend.jar
+          destination: jar
+      - save_cache:
+          key: pythia-{{ checksum "build.sbt" }}
+          paths:
+            - backend/target/resolution-cache
+            - backend/target/streams
+            - project/target/resolution-cache
+            - project/target/streams
+            - ~/.sbt
+            - ~/.ivy2/cache
+            - ~/.m2
+      - save_cache:
+          key: pythia
+          paths:
+            - ~/.sbt
+            - ~/.ivy2/cache
+            - ~/.m2
+  deploy:
+    working_directory: ~/pythia
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - attach_workspace:
+          at: target
+      - run: docker build -t greg2010/pythia .
+      - run: docker tag greg2010/pythia greg2010/pythia:${CIRCLE_BRANCH}_${CIRCLE_SHA1:0:7}
+      - run: docker tag greg2010/pythia greg2010/pythia:${CIRCLE_BRANCH}_latest
+      - run: docker tag greg2010/pythia greg2010/pythia:latest
+      - run: docker login --username ${DOCKER_USER} --password ${DOCKER_PASSWORD}
+      - run: docker push greg2010/pythia
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - deploy:
+          requires:
+            - build
