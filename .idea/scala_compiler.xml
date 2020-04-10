@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ScalaCompilerConfiguration">
     <profile name="sbt 1" modules="schedulecheckerv2_8974" />
-    <profile name="sbt 2" modules="ScheduleChecker,backend">
+    <profile name="sbt 2" modules="ScheduleChecker,backend,pythia">
       <option name="deprecationWarnings" value="true" />
       <option name="uncheckedWarnings" value="true" />
       <option name="featureWarnings" value="true" />

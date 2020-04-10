@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/pythia
     docker:
-      - image: circleci/openjdk:13-jdk
+      - image: circleci/openjdk:13-jdk-buster
     steps:
       - checkout
       - restore_cache:
@@ -16,7 +16,7 @@ jobs:
           path: test-results
       - run: sbt assembly
       - persist_to_workspace:
-          root: target
+          root: .
           paths:
             - backend/target/scala-2.13/pythia-backend.jar
       - store_artifacts:
@@ -25,8 +25,8 @@ jobs:
       - save_cache:
           key: pythia-{{ checksum "build.sbt" }}
           paths:
-            - backend/target/resolution-cache
-            - backend/target/streams
+            - backend/scala-2.13/target/resolution-cache
+            - backend/scala-2.13/target/streams
             - project/target/resolution-cache
             - project/target/streams
             - ~/.sbt
@@ -44,10 +44,9 @@ jobs:
       - image: docker:17.05.0-ce-git
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - attach_workspace:
-          at: target
+          at: .
       - run: docker build -t greg2010/pythia .
       - run: docker tag greg2010/pythia greg2010/pythia:${CIRCLE_BRANCH}_${CIRCLE_SHA1:0:7}
       - run: docker tag greg2010/pythia greg2010/pythia:${CIRCLE_BRANCH}_latest

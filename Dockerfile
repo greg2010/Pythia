@@ -6,8 +6,8 @@ RUN apk add supervisor
 RUN mkdir /kys
 WORKDIR /kys
 
-COPY ./backend/target/scala-2.13/ScheduleChecker-backend.jar  ScheduleChecker.jar
+COPY ./backend/target/scala-2.13/pythia-backend.jar  pythia.jar
 
-ADD schedulechecker.sv.conf /etc/supervisor/conf.d/
+ADD pythia.sv.conf /etc/supervisor/conf.d/
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/schedulechecker.sv.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/pythia.sv.conf"]
